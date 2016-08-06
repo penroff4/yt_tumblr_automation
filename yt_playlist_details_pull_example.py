@@ -3,6 +3,7 @@
 # Usage example:
 # python3 yt_playlist_details_pull_example.py --playlist_id='<str>'
 
+import json
 import ytdb_tools as ytdb
 
 ################################################################################
@@ -23,4 +24,6 @@ if __name__ == "__main__":
 
   youtube = ytdb.get_authenticated_service(args)
   yt_playlist = ytdb.get_playlist_videos(youtube, args.playlist_id)
-  print(yt_playlist)
+
+  with open('yt_playlist_details_pull_example_log.txt', 'w') as log_file:
+      json.dump(yt_playlist, log_file)

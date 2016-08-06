@@ -340,12 +340,11 @@ def combine_channel_playlist(youtube, channel_id):
 # Record YouTube API response and return it
 def get_playlist_videos(youtube, playlist_id):
 
+    # Grab overall playlist details (e.g. title, channel, published date, ect)
     playlist_details = get_playlist_details(youtube, playlist_id)
 
-    playlist_id =
-    playlist_title =
-    playlist_channel_id =
-    playlist_channel_title =
+    # Stick playlist details in dict.  We'll stick video info here late as well.
+    playlist_dict = {'playlist_details':playlist_details}
 
     playlist_results = youtube.playlistItems().list(
         part="snippet, contentDetails",
@@ -361,12 +360,20 @@ def get_playlist_videos(youtube, playlist_id):
 
         for playlist_item in playlist_results_response["items"]:
 
-            video_title = playlist_item["snippet"]["title"]
-            video_id = playlist_item["snippet"]["resourceId"]["videoId"]
-            playlist_channel_id = playlist_item["snippet"]["channelId"]
-            playlist_channel_title = playlist_item["snippet"]["channelTitle"]
-            video_published_date = playlist_item["snippet"]["publishedAt"]
-            video_description = playlist_item["snippet"]["description"]
+            video_dict = {
+                'video_title':
+                    playlist_item["snippet"]["title"],
+                'video_id':
+                    playlist_item["snippet"]["resourceId"]["videoId"],
+                'video_published_date':
+                    playlist_item["snippet"]["publishedAt"],
+                'video_description':
+                    playlist_item["snippet"]["description"],
+                'video_playlist_position':
+                    playlist_item["snippet"]["position"]
+            }
+
+            playlist_dict[video_dict['video_playlist_position']] = video_dict
 
         # If reached end of response list, exit loop
         if "nextPageToken" not in playlist_results_response:
@@ -382,6 +389,8 @@ def get_playlist_videos(youtube, playlist_id):
             pageToken=next_page
             )
         playlist_results_response = playlist_results.execute()
+
+    return playlist_dict
 
 # ================================__main__=====================================
 
