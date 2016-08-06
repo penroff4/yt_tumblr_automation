@@ -1,6 +1,16 @@
 import sqlite3
 import time
 
+import httplib2
+import os
+import sys
+
+from apiclient.discovery import build
+from apiclient.errors import HttpError
+from oauth2client.client import flow_from_clientsecrets
+from oauth2client.file import Storage
+from oauth2client.tools import argparser, run_flow
+
 ################################################################################
 
 today = time.strftime("%x") + " " + time.strftime("%X")
@@ -9,7 +19,48 @@ ytDB = 'YouTube'
 connection = sqlite3.connect(ytDB)
 c = connection.cursor()
 
+# ====================================
+
+# The CLIENT_SECRETS_FILE variable specifies the name of a file that contains
+# the OAuth 2.0 information for this application, including its client_id and
+# client_secret. You can acquire an OAuth 2.0 client ID and client secret from
+# the Google Developers Console at https://console.developers.google.com/.
+CLIENT_SECRETS_FILE = "client_secrets.json"
+
+# This OAuth 2.0 access scope allows for full read/write access to the
+# authenticated user's account.
+YOUTUBE_READ_WRITE_SCOPE = "https://www.googleapis.com/auth/youtube"
+YOUTUBE_API_SERVICE_NAME = "youtube"
+YOUTUBE_API_VERSION = "v3"
+
+# This variable defines a message to display if the CLIENT_SECRETS_FILE is
+# missing.
+MISSING_CLIENT_SECRETS_MESSAGE = """
+To make this sample run you will need to populate the client_secrets.json file
+found at:
+   %s
+with information from the APIs Console
+https://console.developers.google.com
+""" % os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                   CLIENT_SECRETS_FILE))
+
 # ===========================Define Methods====================================
+
+# Authorize the request and store authorization credentials.
+def get_authenticated_service(args):
+  flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE, scope=YOUTUBE_READ_WRITE_SCOPE,
+    message=MISSING_CLIENT_SECRETS_MESSAGE)
+
+  storage = Storage("%s-oauth2.json" % sys.argv[0])
+  credentials = storage.get()
+
+  if credentials is None or credentials.invalid:
+    credentials = run_flow(flow, storage, args)
+
+  return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
+    http=credentials.authorize(httplib2.Http()))
+
+# ====================================
 
 # Insert video record to YT_Video table
 def video_to_sql(video_id, name, published_date, channel_id):
@@ -152,7 +203,7 @@ def get_channel_details(youtube, channel_id):
 # Retrieve playlist info and relevant channel info
 def get_channel_playlists(youtube, channel_id):
 
-    channel_dict= {channel_id:yt.get_channel_details(youtube, channel_id)}
+    channel_dict= {channel_id:get_channel_details(youtube, channel_id)}
 
     # Set up API call for Channel details
     channel_results = youtube.channels().list(
@@ -289,7 +340,7 @@ def combine_channel_playlist(youtube, channel_id):
 def get_playlist_videos(youtube, playlist_id):
 
 
-    playlist_dict = yt.get_playlist_details(youtube, playlist_id)
+    playlist_dict = get_playlist_details(youtube, playlist_id)
 
     playlist_results = youtube.playlistItems().list(
         part="snippet, contentDetails",
@@ -304,7 +355,7 @@ def get_playlist_videos(youtube, playlist_id):
 
         for playlist_item in playlist_results_response["items"]:
 
-            video_channel_dict = yt.get_video_details(youtube, video_id)
+            video_channel_dict = get_video_details(youtube, video_id)
 
             video_title = playlist_item["snippet"]["title"]
             video_id = playlist_item["snippet"]["resourceId"]["videoId"]
@@ -313,7 +364,7 @@ def get_playlist_videos(youtube, playlist_id):
             video_channel_id = video_channel_dict['channel_id']
 
             print("{0} | {1} | {2} | {3}".format(
-                video_title, video_id, video_channel_id, yt.get_video_details))
+                video_title, video_id, video_channel_id, get_video_details))
 
         if "nextPageToken" not in playlist_results_response:
             break
