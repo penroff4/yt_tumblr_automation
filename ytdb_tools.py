@@ -100,24 +100,24 @@ def get_playlist_details(youtube, playlist_id):
 
     list_results_response = list_results.execute()
 
-    list_details_dict = {
-        'id':
-            list_results_response["items"][0]["id"],
-        'title':
-            list_results_response["items"][0]["snippet"]["title"],
-        'published_at':
-            list_results_response["items"][0]["snippet"]["publishedAt"],
-        'channel_id':
-            list_results_response["items"][0]["snippet"]["channelId"],
-        'description':
-            list_results_response["items"][0]["snippet"]["description"],
-        'channel_title':
-            list_results_response["items"][0]["snippet"]["channelTitle"],
-        'item_count':
-            list_results_response["items"][0]["contentDetails"]["itemCount"]
-    }
+    # list_details_dict = {
+    #     'id':
+    #         list_results_response["items"][0]["id"],
+    #     'title':
+    #         list_results_response["items"][0]["snippet"]["title"],
+    #     'published_at':
+    #         list_results_response["items"][0]["snippet"]["publishedAt"],
+    #     'channel_id':
+    #         list_results_response["items"][0]["snippet"]["channelId"],
+    #     'description':
+    #         list_results_response["items"][0]["snippet"]["description"],
+    #     'channel_title':
+    #         list_results_response["items"][0]["snippet"]["channelTitle"],
+    #     'item_count':
+    #         list_results_response["items"][0]["contentDetails"]["itemCount"]
+    # }
 
-    return list_details_dict
+    # return list_details_dict
 
 # ====================================
 
