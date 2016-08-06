@@ -143,7 +143,7 @@ def get_video_details(youtube, video_id):
 
 # Get details for specific YouTube Playlist from YouTube API
 def get_playlist_details(youtube, playlist_id):
-    list_results = youtube.videos().list(
+    list_results = youtube.playlists().list(
         part="snippet, contentDetails",
         id=playlist_id,
         maxResults=50
@@ -151,24 +151,24 @@ def get_playlist_details(youtube, playlist_id):
 
     list_results_response = list_results.execute()
 
-    # list_details_dict = {
-    #     'id':
-    #         list_results_response["items"][0]["id"],
-    #     'title':
-    #         list_results_response["items"][0]["snippet"]["title"],
-    #     'published_at':
-    #         list_results_response["items"][0]["snippet"]["publishedAt"],
-    #     'channel_id':
-    #         list_results_response["items"][0]["snippet"]["channelId"],
-    #     'description':
-    #         list_results_response["items"][0]["snippet"]["description"],
-    #     'channel_title':
-    #         list_results_response["items"][0]["snippet"]["channelTitle"],
-    #     'item_count':
-    #         list_results_response["items"][0]["contentDetails"]["itemCount"]
-    # }
+    list_details_dict = {
+        'playlist_id':
+            list_results_response["items"][0]["id"],
+        'playlist_title':
+            list_results_response["items"][0]["snippet"]["title"],
+        'playlist_published_at':
+            list_results_response["items"][0]["snippet"]["publishedAt"],
+        'playlist_channel_id':
+            list_results_response["items"][0]["snippet"]["channelId"],
+        'playlist_description':
+            list_results_response["items"][0]["snippet"]["description"],
+        'playlist_channel_title':
+            list_results_response["items"][0]["snippet"]["channelTitle"],
+        'playlist_item_count':
+            list_results_response["items"][0]["contentDetails"]["itemCount"]
+            }
 
-    # return list_details_dict
+    return list_details_dict
 
 # ====================================
 
@@ -337,10 +337,15 @@ def combine_channel_playlist(youtube, channel_id):
 # ====================================
 
 # Get list of videos in specific YouTube Playlist from YouTube API
+# Record YouTube API response and return it
 def get_playlist_videos(youtube, playlist_id):
 
+    playlist_details = get_playlist_details(youtube, playlist_id)
 
-    playlist_dict = get_playlist_details(youtube, playlist_id)
+    playlist_id =
+    playlist_title =
+    playlist_channel_id =
+    playlist_channel_title =
 
     playlist_results = youtube.playlistItems().list(
         part="snippet, contentDetails",
@@ -350,25 +355,24 @@ def get_playlist_videos(youtube, playlist_id):
 
     playlist_results_response = playlist_results.execute()
 
-    # Print information about each video.
+    # Record information about each video.  Continue looping through each page
+    # of playlist repsonse until out of pages, then break loop.
     while True:
 
         for playlist_item in playlist_results_response["items"]:
 
-            video_channel_dict = get_video_details(youtube, video_id)
-
             video_title = playlist_item["snippet"]["title"]
             video_id = playlist_item["snippet"]["resourceId"]["videoId"]
             playlist_channel_id = playlist_item["snippet"]["channelId"]
-            video_added_date = playlist_item["snippet"]["publishedAt"]
-            video_channel_id = video_channel_dict['channel_id']
+            playlist_channel_title = playlist_item["snippet"]["channelTitle"]
+            video_published_date = playlist_item["snippet"]["publishedAt"]
+            video_description = playlist_item["snippet"]["description"]
 
-            print("{0} | {1} | {2} | {3}".format(
-                video_title, video_id, video_channel_id, get_video_details))
-
+        # If reached end of response list, exit loop
         if "nextPageToken" not in playlist_results_response:
             break
 
+        # Otherwise set things up to move to the next page in playlist response
         next_page = playlist_results_response["nextPageToken"]
 
         playlist_results = youtube.playlistItems().list(
