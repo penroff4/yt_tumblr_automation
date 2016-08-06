@@ -71,5 +71,5 @@ if __name__ == "__main__":
     args.playlist_id = 'PLvj39SJsV11qI7lDGM2y-Y88h_qANN7Gc'
 
   youtube = get_authenticated_service(args)
-
-ytdb.get_playlist_details(youtube, args.playlist_id)
+  yt_playlist = ytdb.get_playlist_videos(youtube, args.playlist_id)
+  print(yt_playlist)
